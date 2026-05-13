@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>MENTE ACTIVA: Salud Mental para Jóvenes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Poppins', 'Inter', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #cfe9ff 0%, #b8d9ff 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Contenedor principal estilo "app" */
+        .game-container {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 48px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255,255,255,0.5);
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+            transition: all 0.2s ease;
+        }
+
+        /* Header con puntuación y progreso */
+        .game-header {
+            background: #1e3a5f;
+            padding: 18px 24px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .score-box, .level-box {
+            background: #ffcd7e;
+            color: #1e3a5f;
+            padding: 6px 18px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1), 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .level-box {
+            background: #cbe6fe;
+            color: #0a2f44;
+        }
+
+        .score-box span, .level-box span {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-left: 8px;
+        }
+
+        /* Área de contenido dinámico */
+        .screen {
+            padding: 32px 28px;
+            display: none;
+            animation: fade 0.3s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(10px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        h2 {
+            font-size: 1.9rem;
+            color: #0f3b5c;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .sub {
+            color: #2c5a7a;
+            margin-bottom: 28px;
+            font-weight: 500;
+            border-left: 4px solid #ffaa3a;
+            padding-left: 16px;
+        }
+
+        /* Opciones tipo tarjeta */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .option-btn {
+            background: #f1f9ff;
+            border: 2px solid #cbdde9;
+            border-radius: 100px;
+            padding: 14px 24px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #1e4663;
+        }
+
+        .option-btn:hover {
+            background: #ffe6c7;
+            border-color: #ffb347;
+            transform: scale(0.98);
+        }
+
+        /* feedback mensajes */
+        .feedback {
+            background: #eef3fc;
+            border-radius: 60px;
+            padding: 14px 22px;
+            margin: 20px 0 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            border-left: 6px solid #ffb84d;
+            color: #1e3a5f;
+        }
+
+        .next-btn {
+            background: #2a73b1;
+            border: none;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: 0.2s;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .next-btn:hover {
+            background: #1e5a8a;
+            transform: translateY(-2px);
+        }
+
+        .restart-btn {
+            background: #e07c3c;
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-weight: bold;
+            margin-top: 25px;
+            cursor: pointer;
+            width: auto;
+            display: inline-block;
+        }
+
+        .final-message {
+            background: #d9eefe;
+            border-radius: 30px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        hr {
+            margin: 20px 0;
+            border: none;
+            height: 2px;
+            background: linear-gradient(to right, #ffcd7e, transparent);
+        }
+
+        @media (max-width: 550px) {
+            .screen { padding: 24px 18px; }
+            h2 { font-size: 1.5rem; }
+            .option-btn { padding: 12px 18px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameApp">
+    <div class="game-header">
+        <div class="score-box">🏆 PUNTOS <span id="puntajeDisplay">0</span></div>
+        <div class="level-box">🧠 NIVEL <span id="nivelDisplay">1</span></div>
+    </div>
+
+    <!-- Pantalla bienvenida / inicio -->
+    <div id="welcomeScreen" class="screen active">
+        <h2>🌱 ¡Bienvenido a Mente Activa!</h2>
+        <div class="sub">Un espacio para reconocer tus emociones, aprender a decidir y fortalecer tu salud mental.</div>
+        <div class="options-grid">
+            <button class="option-btn" id="startGameBtn">🎮 Comenzar experiencia →</button>
+        </div>
+        <div class="feedback" style="background:#fff2e0;">
+            💡 3 niveles: Identifica cómo te sientes, elige situaciones cotidianas y aprende estrategias de afrontamiento.
+        </div>
+    </div>
+
+    <!-- Nivel 1: IDENTIFICACIÓN EMOCIONAL -->
+    <div id="nivel1Screen" class="screen">
+        <h2>📌 Nivel 1 · ¿Cómo te sientes hoy?</h2>
+        <div class="sub">Selecciona la emoción que más resuene contigo. Esto nos ayudará a ofrecerte un camino personalizado.</div>
+        <div class="options-grid" id="emocionesContainer">
+            <button class="option-btn" data-emocion="triste">😔 Triste / desanimado</button>
+            <button class="option-btn" data-emocion="ansioso">😰 Ansioso / preocupado</button>
+            <button class="option-btn" data-emocion="enojado">😤 Enojado / irritable</button>
+            <button class="option-btn" data-emocion="desmotivado">😞 Desmotivado / sin energía</button>
+        </div>
+        <div id="feedbackN1" class="feedback" style="display: none;"></div>
+        <button id="nextFromN1" class="next-btn" style="display: none;">Continuar al Nivel 2 →</button>
+    </div>
+
+    <!-- Nivel 2: TOMA DE DECISIONES (contexto + preguntas) -->
+    <div id="nivel2Screen" class="screen">
+        <h2>⚡ Nivel 2 · Elige una situación</h2>
+        <div class="sub">Contextos cotidianos: ¿cuál te resulta más familiar? Aprenderás estrategias para afrontarlo.</div>
+        <div class="options-grid" id="contextosContainer">
+            <button class="option-btn" data-contexto="academico">📚 Estrés académico</button>
+            <button class="option-btn" data-contexto="social">👥 Problemas sociales / amigos</button>
+            <button class="option-btn" data-contexto="redes">📱 Uso de redes sociales</button>
+            <button class="option-btn" data-contexto="familiar">🏠 Dificultades familiares</button>
+        </div>
+        <!-- preguntas dinámicas nivel 2 -->
+        <div id="preguntasN2" style="display: none;">
+            <div id="preguntaTextoN2" style="font-weight: bold; margin: 20px 0 12px; font-size: 1.2rem;"></div>
+            <div id="opcionesPreguntaN2" class="options-grid"></div>
+            <div id="feedbackN2" class="feedback" style="display: none;"></div>
+            <button id="siguientePreguntaN2" class="next-btn" style="display: none;">Siguiente pregunta →</button>
+        </div>
+        <button id="avanzarNivel3" class="next-btn" style="display: none;">✨ Finalizar nivel 2 e ir a Nivel 3 ✨</button>
+    </div>
+
+    <!-- Nivel 3: RESOLUCIÓN Y APOYO -->
+    <div id="nivel3Screen" class="screen">
+        <h2>🫂 Nivel 3 · ¿Qué harías?</h2>
+        <div class="sub">Situaciones reales para elegir la mejor respuesta. Aprenderás sobre autocuidado y apoyo social.</div>
+        <div id="situacionN3" style="font-size: 1.3rem; font-weight: 600; margin: 10px 0 20px; background:#f4f9fe; padding: 16px; border-radius: 28px;"></div>
+        <div id="opcionesN3" class="options-grid"></div>
+        <div id="feedbackN3" class="feedback" style="display: none;"></div>
+        <button id="siguienteN3" class="next-btn" style="display: none;">Siguiente situación →</button>
+        <button id="finalizarJuego" class="next-btn" style="display: none; background: #4c9f70;">🏁 Ver resultado final 🏁</button>
+    </div>
+
+    <!-- pantalla final -->
+    <div id="finalScreen" class="screen">
+        <div class="final-message">
+            <h2>🌟 ¡Gracias por participar! 🌟</h2>
+            <p id="mensajeFinal" style="margin: 20px 0; font-size: 1.1rem;"></p>
+            <p>🏅 <strong>Puntuación total:</strong> <span id="puntajeFinal"></span> puntos</p>
+            <hr>
+            <p>🧠 Recuerda: pedir apoyo, validar tus emociones y cuidar tu salud mental es un acto de valentía.</p>
+            <button id="reiniciarBtn" class="restart-btn">🔄 Jugar de nuevo</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // -------- ESTADO GLOBAL DEL JUEGO ----------
+    let puntuacion = 0;
+    let nivelActual = 1;       // 1, 2, 3
+    let emocionElegida = "";
+    let contextoElegido = "";
+    
+    // Nivel 2: manejo de preguntas por contexto
+    let preguntasN2 = [];
+    let indicePreguntaActual = 0;
+    let puntajeTempN2 = 0;     // acumulador local pero al final suma a global
+
+    // Nivel 3: manejo de situaciones
+    let situacionesN3 = [];
+    let indiceSituacionActual = 0;
+    let puntajeTempN3 = 0;
+    
+    // elementos DOM
+    const puntajeSpan = document.getElementById('puntajeDisplay');
+    const nivelSpan = document.getElementById('nivelDisplay');
+    const welcomeDiv = document.getElementById('welcomeScreen');
+    const nivel1Div = document.getElementById('nivel1Screen');
+    const nivel2Div = document.getElementById('nivel2Screen');
+    const nivel3Div = document.getElementById('nivel3Screen');
+    const finalDiv = document.getElementById('finalScreen');
+    
+    function actualizarUI() {
+        puntajeSpan.innerText = puntuacion;
+        nivelSpan.innerText = nivelActual;
+    }
+    
+    function sumarPuntos(cantidad) {
+        puntuacion += cantidad;
+        actualizarUI();
+    }
+    
+    // ---------- PREGUNTAS NIVEL 2 (contextuales) ----------
+    // Cada contexto tiene 2 preguntas con alternativas y puntaje (respuesta correcta suma 10 pts)
+    const basePreguntas = {
+        academico: [
+            { pregunta: "Ante mucho estrés académico, ¿cuál es una estrategia de afrontamiento saludable?", 
+              opciones: ["Estudiar sin dormir hasta aprobar", "Ignorar las tareas y distraerme", "Organizar un horario y pedir ayuda si lo necesito", "Consumir cafeína en exceso"], 
+              correcta: 2, puntos: 10 },
+            { pregunta: "¿Qué hábito ayuda a reducir la ansiedad por exámenes?", 
+              opciones: ["Evitar pensar en el examen", "Técnicas de respiración y descansos programados", "Compararse con otros compañeros", "Saltarse comidas para estudiar más"], 
+              correcta: 1, puntos: 10 }
+        ],
+        social: [
+            { pregunta: "Si sientes que tus amigos te excluyen, lo más recomendable es:", 
+              opciones: ["Aislarte y no hablar con nadie", "Hablar asertivamente sobre cómo te sientes", "Publicar indirectas en redes", "Ignorar la situación y acumular enojo"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "¿Cuál es una habilidad social clave para resolver conflictos?", 
+              opciones: ["Gritar para imponer opinión", "Escucha activa y expresión de emociones", "Evitar a la persona conflictiva para siempre", "Hacer que otros tomen partido"], 
+              correcta: 1, puntos: 10 }
+        ],
+        redes: [
+            { pregunta: "¿Cuál es un riesgo del uso excesivo de redes sociales en la salud mental?", 
+              opciones: ["Mayor conexión real con amigos", "Comparación social y baja autoestima", "Aumento de actividad física", "Mejora del sueño"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "¿Qué hábito digital protege tu bienestar?", 
+              opciones: ["Revisar redes apenas despiertas y antes de dormir", "Establecer límites de tiempo y momentos sin pantallas", "Seguir cuentas que generen envidia", "Compartir todo sobre tu vida privada"], 
+              correcta: 1, puntos: 10 }
+        ],
+        familiar: [
+            { pregunta: "Ante una discusión familiar intensa, una estrategia saludable es:", 
+              opciones: ["Gritar y cerrar la puerta", "Tomar distancia momentánea y luego conversar con calma", "Guardar rencor por semanas", "Hablar mal de la familia con amigos"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "¿Qué recurso de apoyo puede ayudar en problemas familiares?", 
+              opciones: ["Un adulto de confianza (orientador, psicólogo, familiar)", "Aislarse completamente", "Consumir alcohol para relajarse", "Mudarse sin avisar"], 
+              correcta: 0, puntos: 10 }
+        ]
+    };
+    
+    // NIVEL 3: 4 situaciones con opciones y puntaje (la opción más saludable suma puntos)
+    const situaciones = [
+        { texto: "Has tenido una semana muy difícil, te sientes agotado y con pensamientos negativos. ¿Qué harías?", 
+          opciones: ["Buscar apoyo en un amigo o familiar de confianza", "Ignorar cómo me siento y seguir adelante solo", "Desquitarme con alguien cercano", "Aislarme por completo sin hablar con nadie"], 
+          correcta: 0, puntos: 15 },
+        { texto: "Un compañero te está haciendo bullying psicológico en el instituto. ¿Cuál es la mejor decisión?", 
+          opciones: ["Callarme y aguantar para no molestar", "Responder con más agresividad", "Pedir ayuda a un profesor o tutor y buscar red de apoyo", "Dejar de ir a clases"], 
+          correcta: 2, puntos: 15 },
+        { texto: "Sientes mucha ansiedad antes de dormir por todo lo que tienes que hacer. ¿Qué acción te ayudaría a regular tus emociones?", 
+          opciones: ["Ver redes sociales hasta dormirme", "Practicar respiración profunda o meditación", "Tomar bebidas energéticas", "Quedarme despierto toda la noche estudiando"], 
+          correcta: 1, puntos: 15 },
+        { texto: "Notas que un amigo cercano está muy triste y se aleja de todos. ¿Qué haces?", 
+          opciones: ["Esperar a que él/ella hable primero", "Mostrarle interés, escuchar sin juzgar y sugerir buscar ayuda profesional", "Hacer como si nada pasara", "Contarle a todos su problema"], 
+          correcta: 1, puntos: 15 }
+    ];
+    
+    // ----- FLUJO DE PANTALLAS -----
+    function mostrarPantalla(id) {
+        welcomeDiv.classList.remove('active');
+        nivel1Div.classList.remove('active');
+        nivel2Div.classList.remove('active');
+        nivel3Div.classList.remove('active');
+        finalDiv.classList.remove('active');
+        if(id === 'welcome') welcomeDiv.classList.add('active');
+        else if(id === 'nivel1') nivel1Div.classList.add('active');
+        else if(id === 'nivel2') nivel2Div.classList.add('active');
+        else if(id === 'nivel3') nivel3Div.classList.add('active');
+        else if(id === 'final') finalDiv.classList.add('active');
+    }
+    
+    // inicio desde bienvenida
+    document.getElementById('startGameBtn').addEventListener('click', () => {
+        resetVariablesParciales();
+        puntuacion = 0;
+        nivelActual = 1;
+        actualizarUI();
+        mostrarPantalla('nivel1');
+        resetNivel1UI();
+    });
+    
+    function resetVariablesParciales() {
+        emocionElegida = "";
+        contextoElegido = "";
+        indicePreguntaActual = 0;
+        puntajeTempN2 = 0;
+        indiceSituacionActual = 0;
+        puntajeTempN3 = 0;
+        preguntasN2 = [];
+    }
+    
+    function resetNivel1UI() {
+        document.getElementById('feedbackN1').style.display = 'none';
+        document.getElementById('nextFromN1').style.display = 'none';
+        document.getElementById('feedbackN1').innerHTML = '';
+        // habilitar botones emociones
+        const btns = document.querySelectorAll('#emocionesContainer .option-btn');
+        btns.forEach(btn => { btn.disabled = false; btn.style.opacity = '1'; });
+    }
+    
+    // --- NIVEL 1: selección de emoción ---
+    const emocionesBtns = document.querySelectorAll('#emocionesContainer .option-btn');
+    emocionesBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            if(emocionElegida !== "") return; // ya eligió
+            emocionElegida = btn.getAttribute('data-emocion');
+            let mensajeFeedback = "";
+            switch(emocionElegida) {
+                case "triste": mensajeFeedback = "😢 Validar la tristeza es el primer paso. Recuerda que pedir apoyo es valiente."; break;
+                case "ansioso": mensajeFeedback = "🌿 La ansiedad nos avisa, pero no nos define. Prueba técnicas de respiración."; break;
+                case "enojado": mensajeFeedback = "🔥 El enojo es una emoción válida. Canalizarlo con deporte o diálogo ayuda."; break;
+                case "desmotivado": mensajeFeedback = "💤 La desmotivación puede aparecer. Pequeñas metas ayudan a recuperar energía."; break;
+                default: mensajeFeedback = "Gracias por reconocer tu emoción.";
+            }
+            // sumar puntos por identificar emoción (10 puntos por participar)
+            sumarPuntos(10);
+            const feedbackDiv = document.getElementById('feedbackN1');
+            feedbackDiv.innerHTML = `🧡 ${mensajeFeedback} (+10 puntos por reconocerte)`;
+            feedbackDiv.style.display = 'block';
+            // deshabilitar botones
+            emocionesBtns.forEach(b => { b.disabled = true; b.style.opacity = '0.6'; });
+            document.getElementById('nextFromN1').style.display = 'block';
+        });
+    });
+    
+    document.getElementById('nextFromN1').addEventListener('click', () => {
+        if(emocionElegida === "") {
+            alert("Selecciona cómo te sientes para continuar.");
+            return;
+        }
+        nivelActual = 2;
+        actualizarUI();
+        // Preparar nivel 2
+        mostrarPantalla('nivel2');
+        resetUI_Nivel2();
+    });
+    
+    function resetUI_Nivel2() {
+        // mostrar contenedor contextos y ocultar preguntas si estaban visibles
+        document.getElementById('contextosContainer').style.display = 'flex';
+        document.getElementById('preguntasN2').style.display = 'none';
+        document.getElementById('avanzarNivel3').style.display = 'none';
+        contextoElegido = "";
+        indicePreguntaActual = 0;
+        puntajeTempN2 = 0;
+        // habilitar botones de contextos
+        const ctxBtns = document.querySelectorAll('#contextosContainer .option-btn');
+        ctxBtns.forEach(btn => { btn.disabled = false; btn.style.opacity = '1'; });
+        document.getElementById('feedbackN2').style.display = 'none';
+    }
+    
+    // Nivel 2: selección de contexto
+    const ctxBtns = document.querySelectorAll('#contextosContainer .option-btn');
+    ctxBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            if(contextoElegido) return;
+            contextoElegido = btn.getAttribute('data-contexto');
+            // cargar preguntas del contexto
+            preguntasN2 = [...basePreguntas[contextoElegido]];
+            indicePreguntaActual = 0;
+            puntajeTempN2 = 0;
+            // ocultar botones de contexto, mostrar bloque de preguntas
+            document.getElementById('contextosContainer').style.display = 'none';
+            document.getElementById('preguntasN2').style.display = 'block';
+            cargarPreguntaNivel2();
+        });
+    });
+    
+    function cargarPreguntaNivel2() {
+        if(indicePreguntaActual >= preguntasN2.length) {
+            // terminó las preguntas: sumar puntos acumulados del nivel 2 a la global
+            sumarPuntos(puntajeTempN2);
+            // mostrar botón para ir a nivel 3
+            document.getElementById('avanzarNivel3').style.display = 'block';
+            document.getElementById('siguientePreguntaN2').style.display = 'none';
+            document.getElementById('feedbackN2').style.display = 'none';
+            document.getElementById('preguntaTextoN2').innerHTML = "✅ ¡Completaste el nivel 2! Has aprendido estrategias para afrontar situaciones.";
+            document.getElementById('opcionesPreguntaN2').innerHTML = "";
+            return;
+        }
+        const p = preguntasN2[indicePreguntaActual];
+        document.getElementById('preguntaTextoN2').innerHTML = p.pregunta;
+        const opcionesDiv = document.getElementById('opcionesPreguntaN2');
+        opcionesDiv.innerHTML = "";
+        p.opciones.forEach((opc, idx) => {
+            const boton = document.createElement('button');
+            boton.className = "option-btn";
+            boton.innerText = opc;
+            boton.addEventListener('click', () => {
+                // evaluar
+                const esCorrecta = (idx === p.correcta);
+                const feedbackDiv = document.getElementById('feedbackN2');
+                if(esCorrecta) {
+                    puntajeTempN2 += p.puntos;
+                    feedbackDiv.innerHTML = `✅ ¡Correcto! +${p.puntos} puntos. ${p.pregunta.split('?')[0]} es una gran estrategia.`;
+                } else {
+                    const correctAnswer = p.opciones[p.correcta];
+                    feedbackDiv.innerHTML = `❌ No es la opción más saludable. La mejor alternativa: "${correctAnswer}". Aprendamos juntos. +0 puntos.`;
+                }
+                feedbackDiv.style.display = 'block';
+                // deshabilitar opciones
+                const allOpts = document.querySelectorAll('#opcionesPreguntaN2 .option-btn');
+                allOpts.forEach(opt => opt.disabled = true);
+                document.getElementById('siguientePreguntaN2').style.display = 'block';
+            });
+            opcionesDiv.appendChild(boton);
+        });
+        document.getElementById('siguientePreguntaN2').style.display = 'none';
+        document.getElementById('feedbackN2').style.display = 'none';
+    }
+    
+    document.getElementById('siguientePreguntaN2').addEventListener('click', () => {
+        indicePreguntaActual++;
+        cargarPreguntaNivel2();
+    });
+    
+    document.getElementById('avanzarNivel3').addEventListener('click', () => {
+        // Aseguramos que cualquier puntaje pendiente se haya sumado (cargarPregunta ya suma al final)
+        // pero por si acaso:
+        if(preguntasN2.length > 0 && indicePreguntaActual >= preguntasN2.length){
+            // ya sumado. pasamos
+        }
+        nivelActual = 3;
+        actualizarUI();
+        iniciarNivel3();
+        mostrarPantalla('nivel3');
+    });
+    
+    // NIVEL 3
+    function iniciarNivel3() {
+        indiceSituacionActual = 0;
+        puntajeTempN3 = 0;
+        situacionesN3 = [...situaciones];
+        cargarSituacion();
+        document.getElementById('siguienteN3').style.display = 'none';
+        document.getElementById('finalizarJuego').style.display = 'none';
+        document.getElementById('feedbackN3').style.display = 'none';
+    }
+    
+    function cargarSituacion() {
+        if(indiceSituacionActual >= situacionesN3.length) {
+            // finalizar nivel 3, sumar puntos acumulados y mostrar final
+            sumarPuntos(puntajeTempN3);
+            mostrarResultadoFinal();
+            return;
+        }
+        const sit = situacionesN3[indiceSituacionActual];
+        document.getElementById('situacionN3').innerHTML = `❓ ${sit.texto}`;
+        const contenedor = document.getElementById('opcionesN3');
+        contenedor.innerHTML = "";
+        sit.opciones.forEach((opc, idx) => {
+            const boton = document.createElement('button');
+            boton.className = "option-btn";
+            boton.innerText = opc;
+            boton.addEventListener('click', () => {
+                const esCorrecta = (idx === sit.correcta);
+                const feedbackDiv = document.getElementById('feedbackN3');
+                if(esCorrecta) {
+                    puntajeTempN3 += sit.puntos;
+                    feedbackDiv.innerHTML = `✨ ¡Excelente decisión! +${sit.puntos} puntos. ${opc} refleja autocuidado y búsqueda de apoyo. ✨`;
+                } else {
+                    const buena = sit.opciones[sit.correcta];
+                    feedbackDiv.innerHTML = `🔄 Esa opción puede no ser la más saludable. Recuerda que actuar con apoyo y regulación emocional es clave. Mejor alternativa: "${buena}". +0 puntos.`;
+                }
+                feedbackDiv.style.display = 'block';
+                // deshabilitar botones
+                const allBtns = document.querySelectorAll('#opcionesN3 .option-btn');
+                allBtns.forEach(b => b.disabled = true);
+                document.getElementById('siguienteN3').style.display = 'block';
+            });
+            contenedor.appendChild(boton);
+        });
+        document.getElementById('siguienteN3').style.display = 'none';
+        document.getElementById('finalizarJuego').style.display = 'none';
+    }
+    
+    document.getElementById('siguienteN3').addEventListener('click', () => {
+        indiceSituacionActual++;
+        cargarSituacion();
+    });
+    
+    function mostrarResultadoFinal() {
+        // sumar puntos finales ya se hizo dentro de cargarSituación al terminar
+        // mostramos pantalla final con puntaje total
+        const puntajeTotal = puntuacion; // ya actualizada
+        let mensaje = "";
+        if(puntajeTotal >= 70) mensaje = "🌟 ¡Increíble! Tienes grandes habilidades de afrontamiento y empatía. Sigue así, eres un apoyo para otros y para ti mismo.";
+        else if(puntajeTotal >= 40) mensaje = "👍 Vas por buen camino. Sigue aprendiendo sobre salud mental, cada paso cuenta para fortalecer tu bienestar.";
+        else mensaje = "💪 Este es el comienzo. Reconocer áreas de mejora es valiente. Buscar información y apoyo te ayudará a crecer.";
+        document.getElementById('mensajeFinal').innerHTML = mensaje;
+        document.getElementById('puntajeFinal').innerHTML = puntajeTotal;
+        mostrarPantalla('final');
+    }
+    
+    document.getElementById('finalizarJuego').addEventListener('click', () => {
+        mostrarResultadoFinal();
+    });
+    
+    document.getElementById('reiniciarBtn').addEventListener('click', () => {
+        // reinicio completo
+        puntuacion = 0;
+        nivelActual = 1;
+        emocionElegida = "";
+        contextoElegido = "";
+        puntajeTempN2 = 0;
+        puntajeTempN3 = 0;
+        indicePreguntaActual = 0;
+        indiceSituacionActual = 0;
+        actualizarUI();
+        mostrarPantalla('welcome');
+        resetNivel1UI();
+    });
+    
+    // Inicializar por si empieza desde bienvenida
+    actualizarUI();
+</script>
+</body>
+</html>
