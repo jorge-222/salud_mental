@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>MENTE ACTIVA: Salud Mental para Jóvenes</title>
+    <title>Ruta emocional: decisiones que construyen bienestar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
@@ -48,6 +48,10 @@
             color: var(--ink);
             overflow-x: hidden;
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
         /* BLOBS animados para contexto emocional */
@@ -139,13 +143,6 @@
             position: relative;
             z-index: 1;
             margin: 0 auto;
-        }
-
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
         }
 
         /* Header con puntuación y progreso */
@@ -516,7 +513,7 @@
 
     <!-- Pantalla bienvenida / inicio -->
     <div id="welcomeScreen" class="screen active">
-        <h2>🌱 ¡Bienvenido a Mente Activa!</h2>
+        <h2>🌱 Ruta emocional: decisiones que construyen bienestar</h2>
         <div class="sub">Un espacio para reconocer tus emociones, aprender a decidir y fortalecer tu salud mental.</div>
         <div class="options-grid">
             <button class="option-btn" id="startGameBtn">🎮 Comenzar experiencia →</button>
@@ -598,6 +595,11 @@
     let nivelActual = 1;       // 1, 2, 3
     let emocionElegida = "";
     let contextoElegido = "";
+    
+    // Nivel 1: manejo de preguntas por emoción
+    let preguntasN1 = [];
+    let indicePreguntaN1 = 0;
+    let puntajeTempN1 = 0;
     
     // Nivel 2: manejo de preguntas por contexto
     let preguntasN2 = [];
@@ -759,76 +761,75 @@
         ]
     };
     
-    // ---------- PREGUNTAS NIVEL 2 (contextuales) + CULTURA GENERAL por emoción ----------
-    // Estructura: preguntas de contexto + inserción de preguntas de cultura general según emoción elegida
+    // ---------- PREGUNTAS NIVEL 2 (contextuales) - EXACTAS del documento ----------
     const basePreguntas = {
         academico: [
-            { pregunta: "Ante mucho estrés académico, ¿cuál es una estrategia de afrontamiento saludable?", 
-              opciones: ["Estudiar sin dormir hasta aprobar", "Ignorar las tareas y distraerme", "Organizar un horario y pedir ayuda si lo necesito", "Consumir cafeína en exceso"], 
-              correcta: 2, puntos: 10 },
-            { pregunta: "¿Qué hábito ayuda a reducir la ansiedad por exámenes?", 
-              opciones: ["Evitar pensar en el examen", "Técnicas de respiración y descansos programados", "Compararse con otros compañeros", "Saltarse comidas para estudiar más"], 
+            { pregunta: "La falta de sueño afecta:", 
+              opciones: ["Solo el cuerpo", "El cuerpo y la mente"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "Ante una sobrecarga académica es recomendable:", 
+              opciones: ["Ignorarla", "Organizar el tiempo"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "¿Cuánto es 2 + 2?", 
+              opciones: ["4", "5"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "Pedir ayuda en el estudio es:", 
+              opciones: ["Inadecuado", "Adecuado"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "Estudiar sin pausas es efectivo:", 
+              opciones: ["Sí", "No"], 
               correcta: 1, puntos: 10 }
         ],
         social: [
-            { pregunta: "Si sientes que tus amigos te excluyen, lo más recomendable es:", 
-              opciones: ["Aislarte y no hablar con nadie", "Hablar asertivamente sobre cómo te sientes", "Publicar indirectas en redes", "Ignorar la situación y acumular enojo"], 
+            { pregunta: "Si hay un conflicto con un amigo:", 
+              opciones: ["Ignorarlo", "Dialogar"], 
               correcta: 1, puntos: 10 },
-            { pregunta: "¿Cuál es una habilidad social clave para resolver conflictos?", 
-              opciones: ["Gritar para imponer opinión", "Escucha activa y expresión de emociones", "Evitar a la persona conflictiva para siempre", "Hacer que otros tomen partido"], 
+            { pregunta: "Escuchar a otros es:", 
+              opciones: ["Importante", "Poco importante"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "¿Qué animal vive en el mar?", 
+              opciones: ["Tiburón", "Perro"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "Aislarse siempre ayuda:", 
+              opciones: ["Sí", "No"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "Expresar lo que se siente es:", 
+              opciones: ["Negativo", "Positivo"], 
               correcta: 1, puntos: 10 }
         ],
         redes: [
-            { pregunta: "¿Cuál es un riesgo del uso excesivo de redes sociales en la salud mental?", 
-              opciones: ["Mayor conexión real con amigos", "Comparación social y baja autoestima", "Aumento de actividad física", "Mejora del sueño"], 
+            { pregunta: "El uso excesivo de redes puede afectar el bienestar:", 
+              opciones: ["Sí", "No"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "Compararse constantemente con otros:", 
+              opciones: ["Es saludable", "Puede afectar"], 
               correcta: 1, puntos: 10 },
-            { pregunta: "¿Qué hábito digital protege tu bienestar?", 
-              opciones: ["Revisar redes apenas despiertas y antes de dormir", "Establecer límites de tiempo y momentos sin pantallas", "Seguir cuentas que generen envidia", "Compartir todo sobre tu vida privada"], 
-              correcta: 1, puntos: 10 }
+            { pregunta: "¿Cuál es una bebida saludable?", 
+              opciones: ["Agua", "Gaseosa"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "Tomar pausas de redes sociales:", 
+              opciones: ["Ayuda", "No ayuda"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "El contenido digital influye en las emociones:", 
+              opciones: ["Sí", "No"], 
+              correcta: 0, puntos: 10 }
         ],
         familiar: [
-            { pregunta: "Ante una discusión familiar intensa, una estrategia saludable es:", 
-              opciones: ["Gritar y cerrar la puerta", "Tomar distancia momentánea y luego conversar con calma", "Guardar rencor por semanas", "Hablar mal de la familia con amigos"], 
+            { pregunta: "Ante un problema en casa es útil:", 
+              opciones: ["Guardarlo", "Hablarlo"], 
               correcta: 1, puntos: 10 },
-            { pregunta: "¿Qué recurso de apoyo puede ayudar en problemas familiares?", 
-              opciones: ["Un adulto de confianza (orientador, psicólogo, familiar)", "Aislarse completamente", "Consumir alcohol para relajarse", "Mudarse sin avisar"], 
-              correcta: 0, puntos: 10 }
-        ]
-    };
-    
-    // Preguntas de cultura general por emoción (para insertar en posiciones 3 y 5)
-    const culturalGeneralPorEmocion = {
-        triste: [
-            { pregunta: "¿Cuál es el planeta más grande del sistema solar?", 
-              opciones: ["Júpiter", "Marte"], 
+            { pregunta: "El apoyo familiar es:", 
+              opciones: ["Importante", "Irrelevante"], 
               correcta: 0, puntos: 10 },
-            { pregunta: "¿Cuántos días tiene una semana?", 
-              opciones: ["7", "5"], 
-              correcta: 0, puntos: 10 }
-        ],
-        ansioso: [
-            { pregunta: "¿Cuál es el animal más rápido en tierra?", 
-              opciones: ["Guepardo", "León"], 
+            { pregunta: "¿Qué instrumento tiene teclas?", 
+              opciones: ["Piano", "Guitarra"], 
               correcta: 0, puntos: 10 },
-            { pregunta: "¿Cuál es el color del cielo en un día despejado?", 
-              opciones: ["Azul", "Verde"], 
-              correcta: 0, puntos: 10 }
-        ],
-        enojado: [
-            { pregunta: "¿Cuál es la capital de Colombia?", 
-              opciones: ["Bogotá", "Lima"], 
-              correcta: 0, puntos: 10 },
-            { pregunta: "¿Cuántos meses tiene un año?", 
-              opciones: ["12", "10"], 
-              correcta: 0, puntos: 10 }
-        ],
-        desmotivado: [
-            { pregunta: "¿Cuál es el océano más grande del mundo?", 
-              opciones: ["Océano Pacífico", "Océano Atlántico"], 
-              correcta: 0, puntos: 10 },
-            { pregunta: "¿En cuántas categorías se dividen las artes?", 
-              opciones: ["7", "5"], 
-              correcta: 0, puntos: 10 }
+            { pregunta: "Expresar emociones en casa es:", 
+              opciones: ["Inadecuado", "Adecuado"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "Buscar ayuda externa cuando es necesario:", 
+              opciones: ["Está mal", "Es válido"], 
+              correcta: 1, puntos: 10 }
         ]
     };
     
@@ -1111,9 +1112,6 @@
     }
     
     // --- NIVEL 1: selección de emoción y preguntas ---
-    let preguntasN1 = [];
-    let indicePreguntaN1 = 0;
-    let puntajeTempN1 = 0;
     
     const emocionesBtns = document.querySelectorAll('#emocionesContainer .option-btn');
     emocionesBtns.forEach(btn => {
@@ -1230,14 +1228,8 @@
         btn.addEventListener('click', (e) => {
             if(contextoElegido) return;
             contextoElegido = btn.getAttribute('data-contexto');
-            // cargar preguntas del contexto
+            // cargar preguntas exactas del contexto (5 preguntas)
             preguntasN2 = [...basePreguntas[contextoElegido]];
-            // insertar preguntas de cultura general en posiciones 3 y 5
-            const culturalGeneral = culturalGeneralPorEmocion[emocionElegida];
-            if(culturalGeneral && culturalGeneral.length >= 2) {
-                preguntasN2.splice(2, 0, culturalGeneral[0]); // insertar en posición 3 (índice 2)
-                preguntasN2.splice(4, 0, culturalGeneral[1]); // insertar en posición 5 (índice 4)
-            }
             indicePreguntaActual = 0;
             puntajeTempN2 = 0;
             // ocultar botones de contexto, mostrar bloque de preguntas
