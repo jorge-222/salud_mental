@@ -537,6 +537,13 @@
             <button class="option-btn" data-emocion="desmotivado">😞 Desmotivado / sin energía</button>
         </div>
         <div id="feedbackN1" class="feedback" style="display: none;"></div>
+        <!-- Preguntas dinámicas nivel 1 -->
+        <div id="preguntasN1" style="display: none;">
+            <div id="preguntaTextoN1" style="font-weight: bold; margin: 20px 0 12px; font-size: 1.2rem;"></div>
+            <div id="opcionesN1" class="options-grid"></div>
+            <div id="feedbackN1Pregunta" class="feedback" style="display: none;"></div>
+            <button id="siguientePreguntaN1" class="next-btn" style="display: none;">Siguiente pregunta →</button>
+        </div>
         <button id="nextFromN1" class="next-btn" style="display: none;">Continuar al Nivel 2 →</button>
     </div>
 
@@ -679,6 +686,79 @@
         }
     }
     
+    // ---------- PREGUNTAS NIVEL 1 (IDENTIFICACIÓN EMOCIONAL) ----------
+    // Preguntas específicas para cada emoción elegida
+    const preguntasNivel1PorEmocion = {
+        triste: [
+            { pregunta: "Sentirse triste durante varios días:", 
+              opciones: ["Es normal ignorarlo", "Puede necesitar atención"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "Hablar con alguien cuando se está triste:", 
+              opciones: ["Ayuda", "No ayuda"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "¿Cuál es el planeta más grande del sistema solar?", 
+              opciones: ["Júpiter", "Marte"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "La depresión es solo sentirse triste:", 
+              opciones: ["Verdadero", "Falso"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "¿Cuántos días tiene una semana?", 
+              opciones: ["7", "5"], 
+              correcta: 0, puntos: 10 }
+        ],
+        ansioso: [
+            { pregunta: "Respirar profundo en momentos de ansiedad:", 
+              opciones: ["Ayuda", "No ayuda"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "Ante el estrés, una acción adecuada es:", 
+              opciones: ["Ignorarlo", "Tomar pausas"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "¿Cuál es el animal más rápido en tierra?", 
+              opciones: ["Guepardo", "León"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "Dormir poco afecta la salud mental:", 
+              opciones: ["Sí", "No"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "¿Cuál es el color del cielo en un día despejado?", 
+              opciones: ["Azul", "Verde"], 
+              correcta: 0, puntos: 10 }
+        ],
+        enojado: [
+            { pregunta: "Ante el enojo, es recomendable:", 
+              opciones: ["Golpear objetos", "Calmarse y respirar"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "Expresar emociones es:", 
+              opciones: ["Negativo", "Positivo"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "¿Cuál es la capital de Colombia?", 
+              opciones: ["Bogotá", "Lima"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "Guardarse las emociones siempre es mejor:", 
+              opciones: ["Sí", "No"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "¿Cuántos meses tiene un año?", 
+              opciones: ["12", "10"], 
+              correcta: 0, puntos: 10 }
+        ],
+        desmotivado: [
+            { pregunta: "No tener ánimo siempre significa pereza:", 
+              opciones: ["Sí", "No"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "La actividad física puede mejorar el estado de ánimo:", 
+              opciones: ["Sí", "No"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "¿Qué gas es esencial para la respiración humana?", 
+              opciones: ["Oxígeno", "Helio"], 
+              correcta: 0, puntos: 10 },
+            { pregunta: "Buscar apoyo es:", 
+              opciones: ["Señal de debilidad", "Una acción adecuada"], 
+              correcta: 1, puntos: 10 },
+            { pregunta: "¿Cuál es el océano más grande?", 
+              opciones: ["Pacífico", "Atlántico"], 
+              correcta: 0, puntos: 10 }
+        ]
+    };
+    
     // ---------- PREGUNTAS NIVEL 2 (contextuales) + CULTURA GENERAL por emoción ----------
     // Estructura: preguntas de contexto + inserción de preguntas de cultura general según emoción elegida
     const basePreguntas = {
@@ -752,21 +832,233 @@
         ]
     };
     
-    // NIVEL 3: 4 situaciones con opciones y puntaje (la opción más saludable suma puntos)
-    const situaciones = [
-        { texto: "Has tenido una semana muy difícil, te sientes agotado y con pensamientos negativos. ¿Qué harías?", 
-          opciones: ["Buscar apoyo en un amigo o familiar de confianza", "Ignorar cómo me siento y seguir adelante solo", "Desquitarme con alguien cercano", "Aislarme por completo sin hablar con nadie"], 
-          correcta: 0, puntos: 15 },
-        { texto: "Un compañero te está haciendo bullying psicológico en el instituto. ¿Cuál es la mejor decisión?", 
-          opciones: ["Callarme y aguantar para no molestar", "Responder con más agresividad", "Pedir ayuda a un profesor o tutor y buscar red de apoyo", "Dejar de ir a clases"], 
-          correcta: 2, puntos: 15 },
-        { texto: "Sientes mucha ansiedad antes de dormir por todo lo que tienes que hacer. ¿Qué acción te ayudaría a regular tus emociones?", 
-          opciones: ["Ver redes sociales hasta dormirme", "Practicar respiración profunda o meditación", "Tomar bebidas energéticas", "Quedarme despierto toda la noche estudiando"], 
-          correcta: 1, puntos: 15 },
-        { texto: "Notas que un amigo cercano está muy triste y se aleja de todos. ¿Qué haces?", 
-          opciones: ["Esperar a que él/ella hable primero", "Mostrarle interés, escuchar sin juzgar y sugerir buscar ayuda profesional", "Hacer como si nada pasara", "Contarle a todos su problema"], 
-          correcta: 1, puntos: 15 }
-    ];
+    // NIVEL 3: Situaciones dinámicas según emoción + contexto
+    const situacionesPorEmocionYContexto = {
+        triste_academico: [
+            { texto: "Tienes bajas calificaciones y eso te hace sentir muy triste y sin valor. ¿Qué haces?", 
+              opciones: ["Abandonar los estudios", "Hablar con un profesor o tutor sobre apoyo académico", "Culparte por no ser lo suficientemente inteligente", "Esconder las calificaciones"], 
+              correcta: 1, puntos: 15 },
+            { texto: "El estrés académico te hace sentir abrumado y deprimido. ¿Cuál es el mejor paso?", 
+              opciones: ["Esperar a que se pase", "Buscar un lugar de apoyo: profesor, consejero escolar", "Aislarte para no molestar", "Aumentar más tareas"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Reprobaste un examen y sientes que no sirves. ¿Qué es lo más saludable?", 
+              opciones: ["Creer que nunca lo lograrás", "Reconocer el error y buscar ayuda para mejorar", "No volver a intentar", "Culpar al profesor"], 
+              correcta: 1, puntos: 15 },
+            { texto: "La presión académica te tiene triste y sin ánimos. ¿Cuál es tu acción?", 
+              opciones: ["Ignorar tu salud mental", "Hablar con alguien y buscar estrategias de manejo del estrés", "Automedicarte", "Aislarte completamente"], 
+              correcta: 1, puntos: 15 }
+        ],
+        triste_social: [
+            { texto: "Sientes que no tienes amigos y te sientes muy solo. ¿Qué haces?", 
+              opciones: ["Alejarte más para que no te duela", "Hablar con alguien de confianza y buscar espacios para conectar", "Culparte por no ser sociable", "Ignorar la soledad"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Tu mejor amigo te rechazó y te sientes devastado. ¿Cuál es la mejor respuesta?", 
+              opciones: ["Guardar rencor silenciosamente", "Expresar tus sentimientos y buscar apoyo en otros", "Desquitarte con él", "Alejarte de todos"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Sientes que no encajas con tu grupo de amigos. ¿Qué haces?", 
+              opciones: ["Forzarte a estar con ellos sin decir nada", "Buscar grupos que compartan tus intereses y hablar sobre cómo te sientes", "Abandonar la amistad sin explicar", "Pretender estar bien"], 
+              correcta: 1, puntos: 15 },
+            { texto: "La soledad y rechazo te tienen muy triste. ¿Cuál es tu primer paso?", 
+              opciones: ["Aumentar el aislamiento", "Buscar ayuda de un adulto o profesional y conectar con otros", "Culparte por ser así", "Ignorar tus sentimientos"], 
+              correcta: 1, puntos: 15 }
+        ],
+        triste_redes: [
+            { texto: "Ver publicaciones felices de otros en redes te hace sentir peor sobre ti. ¿Qué haces?", 
+              opciones: ["Obsesionarte más con las redes", "Tomar un descanso de redes y hablar con alguien", "Compararte más con otros", "Publicar cosas tristes para llamar atención"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Tu contenido no recibe likes y eso te hace sentir rechazado. ¿Cuál es la acción sabia?", 
+              opciones: ["Dejar de publicar", "Recordar que tu valor no depende de likes y buscar apoyo real", "Borrar todo", "Publicar contenido más extremo"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Las redes sociales están empeorando tu tristeza. ¿Qué haces?", 
+              opciones: ["Usar más redes para sentirte mejor", "Establecer límites: menos tiempo en redes, más conexión real", "Culparte por sentirte mal", "Ignorar el problema"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Ves acoso en línea y eso te deprime. ¿Cuál es tu acción?", 
+              opciones: ["Participar en el acoso", "Reportar el contenido y buscar apoyo", "Ignorarlo", "Aislarte de las redes"], 
+              correcta: 1, puntos: 15 }
+        ],
+        triste_familiar: [
+            { texto: "Hay conflictos en casa y eso te tiene muy triste. ¿Qué haces?", 
+              opciones: ["Guardar todo para ti", "Hablar con un adulto de confianza sobre lo que sientes", "Culparte por los problemas", "Escapar de casa"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Un miembro de tu familia está enfermo y eso te deprime. ¿Cuál es lo mejor?", 
+              opciones: ["Aislarte", "Buscar apoyo emocional y ayudar donde puedas", "Negarlo", "Culparte"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Tus padres se pelean constantemente y te sientes triste. ¿Qué acción es saludable?", 
+              opciones: ["Involucrarte en las discusiones", "Buscar un lugar seguro y hablar con un adulto de confianza", "Tomar partido", "Asumir la culpa"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Te sientes rechazado por tu familia. ¿Cuál es tu primer paso?", 
+              opciones: ["Aumentar el aislamiento", "Expresar tus sentimientos y buscar ayuda profesional si es necesario", "Vengarte", "Ignorar tus emociones"], 
+              correcta: 1, puntos: 15 }
+        ],
+        ansioso_academico: [
+            { texto: "Tienes mucha ansiedad antes de los exámenes. ¿Cuál es la mejor estrategia?", 
+              opciones: ["Estudiar toda la noche sin dormir", "Practicar técnicas de respiración y estudiar de forma ordenada", "Tomar medicinas sin receta", "Copiar en el examen"], 
+              correcta: 1, puntos: 15 },
+            { texto: "La presión académica te causa ansiedad diaria. ¿Qué haces?", 
+              opciones: ["Ignorar la ansiedad", "Hablar con un consejero y crear un plan de estudios manejable", "Consumir cafeína en exceso", "Dejar de estudiar"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Sientes pánico al presentar trabajos en clase. ¿Cuál es la acción más sabia?", 
+              opciones: ["Evitar presentaciones", "Practicar con alguien de confianza y hablar con tu profesor", "Tomar alcohol para calmarte", "Faltar a clase"], 
+              correcta: 1, puntos: 15 },
+            { texto: "La ansiedad está afectando tu rendimiento académico. ¿Qué haces?", 
+              opciones: ["Soportar solo", "Buscar apoyo profesional y crear rutinas de relajación", "Aumentar la presión sobre ti", "Abandonar los estudios"], 
+              correcta: 1, puntos: 15 }
+        ],
+        ansioso_social: [
+            { texto: "Tienes ansiedad social y te cuesta hablar en grupo. ¿Qué haces?", 
+              opciones: ["Evitar todas las situaciones sociales", "Practicar poco a poco y buscar apoyo", "Forzarte a estar en grandes grupos", "Culparte por ser así"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Temes ser juzgado por tus compañeros. ¿Cuál es la mejor acción?", 
+              opciones: ["Fingir ser alguien que no eres", "Ser auténtico y hablar con alguien de confianza", "Aislarte", "Obsesionarte con lo que otros piensen"], 
+              correcta: 1, puntos: 15 },
+            { texto: "La ansiedad te impide hacer amigos. ¿Qué haces?", 
+              opciones: ["Renunciar a tener amigos", "Buscar actividades que disfrutes y conectar gradualmente", "Forzarte agresivamente a socializar", "Evitar cualquier interacción"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Sientes que todos te juzgan y eso causa ansiedad. ¿Cuál es tu acción?", 
+              opciones: ["Agregarle más presión", "Hablar con alguien y recordar que no todos te juzgan", "Aislarte completamente", "Cambiar quién eres"], 
+              correcta: 1, puntos: 15 }
+        ],
+        ansioso_redes: [
+            { texto: "Las redes sociales te causan ansiedad por FOMO. ¿Qué es lo mejor?", 
+              opciones: ["Revisar redes constantemente", "Establecer límites de tiempo y desconexiones regulares", "Crear más cuentas", "Dejar de ver amigos"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Te causa ansiedad saber qué publican otros. ¿Cuál es tu acción?", 
+              opciones: ["Monitorear constantemente", "Manejar la ansiedad con técnicas y limitar el uso", "Publicar también constantemente", "Abandonar las redes"], 
+              correcta: 1, puntos: 15 },
+            { texto: "La respuesta a tus publicaciones te causa ansiedad. ¿Qué haces?", 
+              opciones: ["Revisar obsesivamente", "Recordar tu valor y tomar descansos de redes", "Eliminar el contenido", "Nunca publicar"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Las notificaciones de redes generan ansiedad. ¿Cuál es lo más sano?", 
+              opciones: ["Apagar el teléfono", "Desactivar notificaciones y revisar en horarios específicos", "Verificar constantemente", "Culparte"], 
+              correcta: 1, puntos: 15 }
+        ],
+        ansioso_familiar: [
+            { texto: "Los conflictos familiares te causan mucha ansiedad. ¿Qué haces?", 
+              opciones: ["Involucrarte para 'resolver' todo", "Buscar un espacio seguro y hablar sobre tus sentimientos", "Esconderte", "Culparte"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Tu familia te presiona y eso causa ansiedad. ¿Cuál es la acción sabia?", 
+              opciones: ["Aceptar toda la presión", "Comunicar tus límites y buscar apoyo", "Explotar", "Alejarte de la familia"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Preocuparte constantemente por la familia genera ansiedad. ¿Qué haces?", 
+              opciones: ["Obsesionarte más", "Establecer límites saludables y hablar con alguien", "Ignorarlo", "Cargar con toda la responsabilidad"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Las expectativas familiares te causan ansiedad. ¿Cuál es tu acción?", 
+              opciones: ["Intentar cumplir todas", "Dialogar sobre tus necesidades y buscar equilibrio", "Rebelarte", "Sentirte en deuda siempre"], 
+              correcta: 1, puntos: 15 }
+        ],
+        enojado_academico: [
+            { texto: "Un profesor te trata injustamente y te enoja. ¿Cómo actúas?", 
+              opciones: ["Explotar en clase", "Hablar con calma con el profesor o un adulto de confianza", "Dejar de estudiar", "Buscar venganza"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Tus compañeros burlan tu trabajo y eso te enoja. ¿Qué haces?", 
+              opciones: ["Atacarlos", "Expresar tu molestia de forma asertiva y buscar apoyo", "Abandonar la clase", "Planear una venganza"], 
+              correcta: 1, puntos: 15 },
+            { texto: "El estrés académico te hace enojarte con todo. ¿Cuál es la acción mejor?", 
+              opciones: ["Explotar", "Tomar descansos y hablar sobre tu estrés", "Estudiar más enojado", "Culpar a otros"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Tu profesor desaprueba tu trabajo sin explicar. ¿Cómo respondes?", 
+              opciones: ["Enojarte y confrontar agresivamente", "Respirar, pedir una explicación calmadamente", "Renunciar", "Desquitarte"], 
+              correcta: 1, puntos: 15 }
+        ],
+        enojado_social: [
+            { texto: "Un amigo te traiciona y estás enojado. ¿Qué haces?", 
+              opciones: ["Desquitarte de inmediato", "Expresar tu enojo de forma asertiva y decidir sobre la amistad", "Guardar rencor eternamente", "Traicionar a otros"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Tu grupo de amigos te excluye y te enoja. ¿Cuál es tu acción?", 
+              opciones: ["Vengarte", "Hablar sobre lo que sentiste y buscar nuevas amistades", "Aislarte con enojo", "Crear drama"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Alguien rumoreaba sobre ti y eso te enoja. ¿Qué haces?", 
+              opciones: ["Difundir rumores sobre él/ella", "Confrontar con tranquilidad y establecer límites", "Ignorar y guardar enojo", "Buscar apoyo antes de actuar"], 
+              correcta: 3, puntos: 15 },
+            { texto: "Tu enojo está dañando tus amistades. ¿Cuál es el mejor paso?", 
+              opciones: ["Culpar a todos", "Buscar ayuda para gestionar el enojo y disculparte", "Aislarte", "Explotar más"], 
+              correcta: 1, puntos: 15 }
+        ],
+        enojado_redes: [
+            { texto: "Alguien te insultó en redes y estás muy enojado. ¿Qué haces?", 
+              opciones: ["Responder agresivamente", "Respirar, bloquear y reportar si es necesario", "Publicar algo agresivo", "Obsesionarte"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Las redes te muestran contenido que te enoja. ¿Cuál es la acción sabia?", 
+              opciones: ["Engancharte en discusiones", "Desactivar notificaciones y limitar el uso", "Publicar algo más enojado", "Culpar a otros"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Ves acoso en línea que te enoja. ¿Qué haces?", 
+              opciones: ["Participar en el ataque", "Reportar y buscar apoyo emocional", "Ignorarlo", "Amplificar el acoso"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Tu enojo en redes está afectando tu reputación. ¿Cuál es tu acción?", 
+              opciones: ["Continuar expresando enojo", "Tomar un descanso de redes y buscar ayuda", "Borrar todo", "Crear más conflicto"], 
+              correcta: 1, puntos: 15 }
+        ],
+        enojado_familiar: [
+            { texto: "Tus padres te castigaron y estás muy enojado. ¿Cómo actúas?", 
+              opciones: ["Explotar y amenazar", "Respirar, expresar tu punto de vista con calma", "Escapar", "Venganza"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Tu hermano te molesta constantemente y te enoja. ¿Qué haces?", 
+              opciones: ["Atacarlo", "Establecer límites claros y pedir ayuda si persiste", "Ignorarlo con enojo", "Desquitarte cuando puedas"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Tu familia no te comprende y eso te enoja. ¿Cuál es la acción mejor?", 
+              opciones: ["Alejarte enojado", "Comunicar tus sentimientos y buscar entendimiento", "Guardar enojo", "Culpar a la familia"], 
+              correcta: 1, puntos: 15 },
+            { texto: "El enojo en casa está dañando tus relaciones. ¿Qué haces?", 
+              opciones: ["Aumentar los conflictos", "Buscar ayuda profesional y aprender a manejar el enojo", "Aislarte", "Explotar más"], 
+              correcta: 1, puntos: 15 }
+        ],
+        desmotivado_academico: [
+            { texto: "No tienes ánimo para estudiar y tus calificaciones caen. ¿Qué haces?", 
+              opciones: ["Rendirte", "Establecer pequeñas metas de estudio y buscar apoyo", "Dejar de intentar", "Culparte"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Sientes que estudiar no sirve para nada. ¿Cuál es la acción sabia?", 
+              opciones: ["Abandonar la escuela", "Hablar con un consejero y encontrar motivación", "Ignorar todo", "Asumir fracaso"], 
+              correcta: 1, puntos: 15 },
+            { texto: "El aburrimiento académico te desmotiva. ¿Qué haces?", 
+              opciones: ["Faltar a clase constantemente", "Buscar áreas de interés y estudiar de forma diferente", "Dejar todo", "Culpar a la escuela"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Estás desmotivado y quieres mejorar. ¿Cuál es tu primer paso?", 
+              opciones: ["Esperar cambios mágicos", "Crear un pequeño plan y buscar un mentor académico", "Rendirte", "Forzarte sin parar"], 
+              correcta: 1, puntos: 15 }
+        ],
+        desmotivado_social: [
+            { texto: "No tienes energía para socializar. ¿Qué haces?", 
+              opciones: ["Aislarte completamente", "Buscar actividades pequeñas y conectar gradualmente", "Asumir que siempre estarás solo", "Culparte"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Te sientes sin valor socialmente. ¿Cuál es la mejor acción?", 
+              opciones: ["Evitar a todos", "Buscar un grupo con intereses comunes y apoyo", "Creer que no tienes nada que aportar", "Aislarte"], 
+              correcta: 1, puntos: 15 },
+            { texto: "La desmotivación te impide hacer amigos. ¿Qué haces?", 
+              opciones: ["Rendirte", "Empezar con una persona, hablar con un consejero", "Asumir que nunca tendrás amigos", "Aumentar aislamiento"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Quieres recuperar conexiones sociales. ¿Cuál es tu primer paso?", 
+              opciones: ["Esperar que otros actúen", "Invitar a alguien a algo pequeño y buscar apoyo", "Pensar que es imposible", "Forzarte sin parar"], 
+              correcta: 1, puntos: 15 }
+        ],
+        desmotivado_redes: [
+            { texto: "No tienes ánimo para usar redes sociales. ¿Qué haces?", 
+              opciones: ["Forzarte a publicar constantemente", "Establecer límites saludables y usar solo si quieres", "Asumir que eres invisible", "Abandonarlo todo"], 
+              correcta: 1, puntos: 15 },
+            { texto: "La desmotivación te hace ignorar conexiones en línea. ¿Cuál es lo mejor?", 
+              opciones: ["Desaparecer", "Comunicar que necesitas tiempo y mantener mínima conexión", "Culparte", "Aislarte digitalmente"], 
+              correcta: 1, puntos: 15 },
+            { texto: "No sientes valor en lo que publicas. ¿Qué haces?", 
+              opciones: ["Nunca publicar", "Recordar que tu valor no depende de redes y publicar si quieres", "Eliminar tu cuenta", "Obsesionarte"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Quieres recuperar interés en redes. ¿Cuál es tu acción?", 
+              opciones: ["Forzarte a publicar", "Seguir cuentas que te inspiren y establecer límites", "Abandonar las redes", "Compararte constantemente"], 
+              correcta: 1, puntos: 15 }
+        ],
+        desmotivado_familiar: [
+            { texto: "No tienes energía para participar en la familia. ¿Qué haces?", 
+              opciones: ["Aislar completamente", "Comunicar cómo te sientes y participar en lo que puedas", "Culparte", "Ignorar a la familia"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Te sientes sin valor en tu familia. ¿Cuál es la mejor acción?", 
+              opciones: ["Alejarte", "Hablar con un adulto de confianza sobre tus sentimientos", "Asumir que no eres importante", "Aislarte"], 
+              correcta: 1, puntos: 15 },
+            { texto: "La desmotivación te impide conectar con tu familia. ¿Qué haces?", 
+              opciones: ["Rendirte a la soledad", "Buscar un pequeño momento de conexión y apoyo", "Asumir que nunca será mejor", "Aumentar aislamiento"], 
+              correcta: 1, puntos: 15 },
+            { texto: "Quieres mejorar tus relaciones familiares. ¿Cuál es tu primer paso?", 
+              opciones: ["Esperar que cambien", "Iniciar una pequeña conversación y buscar ayuda profesional", "Pensar que es imposible", "Forzarte sin parar"], 
+              correcta: 1, puntos: 15 }
+        ]
+    };
     
     // ----- FLUJO DE PANTALLAS -----
     function mostrarPantalla(id) {
@@ -795,6 +1087,9 @@
     function resetVariablesParciales() {
         emocionElegida = "";
         contextoElegido = "";
+        indicePreguntaN1 = 0;
+        puntajeTempN1 = 0;
+        preguntasN1 = [];
         indicePreguntaActual = 0;
         puntajeTempN2 = 0;
         indiceSituacionActual = 0;
@@ -806,12 +1101,20 @@
         document.getElementById('feedbackN1').style.display = 'none';
         document.getElementById('nextFromN1').style.display = 'none';
         document.getElementById('feedbackN1').innerHTML = '';
+        document.getElementById('emocionesContainer').style.display = 'flex';
+        document.getElementById('preguntasN1').style.display = 'none';
+        document.getElementById('feedbackN1Pregunta').style.display = 'none';
+        document.getElementById('siguientePreguntaN1').style.display = 'none';
         // habilitar botones emociones
         const btns = document.querySelectorAll('#emocionesContainer .option-btn');
         btns.forEach(btn => { btn.disabled = false; btn.style.opacity = '1'; });
     }
     
-    // --- NIVEL 1: selección de emoción ---
+    // --- NIVEL 1: selección de emoción y preguntas ---
+    let preguntasN1 = [];
+    let indicePreguntaN1 = 0;
+    let puntajeTempN1 = 0;
+    
     const emocionesBtns = document.querySelectorAll('#emocionesContainer .option-btn');
     emocionesBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -822,7 +1125,6 @@
                 case "triste": mensajeFeedback = "😢 Validar la tristeza es el primer paso. Recuerda que pedir apoyo es valiente."; break;
                 case "ansioso": mensajeFeedback = "🌿 La ansiedad nos avisa, pero no nos define. Prueba técnicas de respiración."; break;
                 case "enojado": mensajeFeedback = "🔥 El enojo es una emoción válida. Canalizarlo con deporte o diálogo ayuda."; break;
-                case "desmotivado": mensajeFeedback = "💤 La desmotivación puede aparecer. Pequeñas metas ayudan a recuperar energía."; break;
                 case "desmotivado": mensajeFeedback = "💤 La desmotivación puede aparecer. Pequeñas metas ayudan a recuperar energía."; break;
                 default: mensajeFeedback = "Gracias por reconocer tu emoción.";
             }
@@ -835,8 +1137,65 @@
             feedbackDiv.style.display = 'block';
             // deshabilitar botones
             emocionesBtns.forEach(b => { b.disabled = true; b.style.opacity = '0.6'; });
-            document.getElementById('nextFromN1').style.display = 'block';
+            
+            // Cargar preguntas de Nivel 1 para esta emoción
+            preguntasN1 = [...(preguntasNivel1PorEmocion[emocionElegida] || preguntasNivel1PorEmocion.triste)];
+            indicePreguntaN1 = 0;
+            puntajeTempN1 = 0;
+            
+            // Mostrar preguntas después de 1 segundo
+            setTimeout(() => {
+                document.getElementById('emocionesContainer').style.display = 'none';
+                document.getElementById('preguntasN1').style.display = 'block';
+                cargarPreguntaN1();
+            }, 1500);
         });
+    });
+    
+    function cargarPreguntaN1() {
+        if(indicePreguntaN1 >= preguntasN1.length) {
+            // terminó las preguntas de Nivel 1
+            sumarPuntos(puntajeTempN1);
+            document.getElementById('preguntasN1').style.display = 'none';
+            document.getElementById('nextFromN1').style.display = 'block';
+            document.getElementById('preguntaTextoN1').innerHTML = "✅ ¡Completaste el Nivel 1! Ya conoces más sobre tu emoción.";
+            document.getElementById('opcionesN1').innerHTML = "";
+            return;
+        }
+        const p = preguntasN1[indicePreguntaN1];
+        document.getElementById('preguntaTextoN1').innerHTML = p.pregunta;
+        const opcionesDiv = document.getElementById('opcionesN1');
+        opcionesDiv.innerHTML = "";
+        p.opciones.forEach((opc, idx) => {
+            const boton = document.createElement('button');
+            boton.className = "option-btn";
+            boton.innerText = opc;
+            boton.addEventListener('click', () => {
+                // evaluar
+                const esCorrecta = (idx === p.correcta);
+                const feedbackDiv = document.getElementById('feedbackN1Pregunta');
+                if(esCorrecta) {
+                    puntajeTempN1 += p.puntos;
+                    feedbackDiv.innerHTML = `✅ ¡Correcto! +${p.puntos} puntos. Excelente comprensión.`;
+                } else {
+                    const correctAnswer = p.opciones[p.correcta];
+                    feedbackDiv.innerHTML = `❌ No es la opción correcta. La respuesta es: "${correctAnswer}". Aprendamos juntos. +0 puntos.`;
+                }
+                feedbackDiv.style.display = 'block';
+                // deshabilitar opciones
+                const allOpts = document.querySelectorAll('#opcionesN1 .option-btn');
+                allOpts.forEach(opt => opt.disabled = true);
+                document.getElementById('siguientePreguntaN1').style.display = 'block';
+            });
+            opcionesDiv.appendChild(boton);
+        });
+        document.getElementById('siguientePreguntaN1').style.display = 'none';
+        document.getElementById('feedbackN1Pregunta').style.display = 'none';
+    }
+    
+    document.getElementById('siguientePreguntaN1').addEventListener('click', () => {
+        indicePreguntaN1++;
+        cargarPreguntaN1();
     });
     
     document.getElementById('nextFromN1').addEventListener('click', () => {
@@ -952,7 +1311,9 @@
     function iniciarNivel3() {
         indiceSituacionActual = 0;
         puntajeTempN3 = 0;
-        situacionesN3 = [...situaciones];
+        // Seleccionar situaciones según emoción + contexto elegidos
+        const claveN3 = `${emocionElegida}_${contextoElegido}`;
+        situacionesN3 = [...(situacionesPorEmocionYContexto[claveN3] || situacionesPorEmocionYContexto.triste_academico)];
         cargarSituacion();
         document.getElementById('siguienteN3').style.display = 'none';
         document.getElementById('finalizarJuego').style.display = 'none';
